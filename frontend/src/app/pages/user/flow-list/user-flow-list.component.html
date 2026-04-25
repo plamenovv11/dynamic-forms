@@ -1,0 +1,20 @@
+<div class="page-container">
+  <h1 class="page-title">Available Flows</h1>
+  <p class="text-muted-dark mb-15">Select a flow to start filling in its forms.</p>
+  <div *ngIf="error" class="text-danger">{{error}}</div>
+  <div *ngIf="flows.length === 0 && !error" class="text-muted-light text-center p-3">
+    No flows available. Ask an admin to create one.
+  </div>
+  <div class="form-grid">
+    <div *ngFor="let fl of flows" class="question-card bg-white">
+      <strong class="text-105">{{fl.title}}</strong>
+      <div class="text-muted text-085 mt-03">{{fl.description}}</div>
+      <div class="mt-05">
+        <span class="tag">{{fl._count?.flowForms ?? 0}} form(s)</span>
+      </div>
+      <div class="mt-1">
+        <a [routerLink]="['/flows', fl.id, 'run']" class="fd-button fd-button--emphasized">Start Flow →</a>
+      </div>
+    </div>
+  </div>
+</div>

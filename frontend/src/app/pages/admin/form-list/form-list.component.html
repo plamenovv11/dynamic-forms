@@ -1,0 +1,50 @@
+<div class="page-container">
+  <div class="action-bar">
+    <h1 class="page-title m-0">Forms</h1>
+    <button class="fd-button fd-button--emphasized" (click)="showCreate=true">+ New Form</button>
+  </div>
+
+  <!-- Create form inline -->
+  <div *ngIf="showCreate" class="fd-panel mb-1 p-1 bg-white border-ccc rounded-8">
+    <h3 class="mt-0">Create New Form</h3>
+    <div class="fd-form-group">
+      <div class="fd-form-item">
+        <label class="fd-form-label">Title *</label>
+        <input class="fd-input" [(ngModel)]="newTitle" placeholder="Form title" />
+      </div>
+      <div class="fd-form-item mt-05">
+        <label class="fd-form-label">Description</label>
+        <input class="fd-input" [(ngModel)]="newDescription" placeholder="Optional description" />
+      </div>
+    </div>
+    <div class="flex-row gap-05 mt-075">
+      <button class="fd-button fd-button--emphasized" (click)="createForm()" [disabled]="!newTitle.trim()">Create</button>
+      <button class="fd-button" (click)="showCreate=false;newTitle='';newDescription=''">Cancel</button>
+    </div>
+  </div>
+
+  <!-- Error -->
+  <div *ngIf="error" class="text-danger mb-1">{{error}}</div>
+
+  <!-- Forms grid -->
+  <div *ngIf="forms.length === 0 && !loading" class="text-muted text-center p-3">
+    No forms yet. Create your first form above.
+  </div>
+  <div class="form-grid">
+    <div *ngFor="let f of forms" class="question-card cursor-pointer">
+      <div class="question-header">
+        <div>
+          <strong>{{f.title}}</strong>
+          <div class="text-08 text-muted mt-2px">{{f.description}}</div>
+          <div class="mt-04">
+            <span class="tag">{{f._count?.questions ?? 0}} questions</span>
+          </div>
+        </div>
+        <div class="flex-row items-start gap-05">
+          <a [routerLink]="['/admin/forms', f.id]" class="fd-button fd-button--compact">Edit</a>
+          <button class="fd-button fd-button--compact fd-button--negative" (click)="deleteForm(f.id, $event)">Delete</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

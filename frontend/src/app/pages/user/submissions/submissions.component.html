@@ -1,0 +1,48 @@
+<div class="page-container">
+  <h1 class="page-title">Submissions</h1>
+  <div *ngIf="error" class="text-danger">{{error}}</div>
+  <div *ngIf="submissions.length===0 && !error" class="text-muted-light text-center p-3">
+    No submissions yet.
+  </div>
+
+  <div *ngFor="let s of submissions" class="question-card bg-white mb-1">
+    <div class="flex-row justify-between items-center mb-075">
+      <div>
+        <strong class="text-1">{{s.flow?.title}}</strong>
+        <span class="tag ml-05">Flow</span>
+      </div>
+      <div class="text-08 text-muted">{{s.createdAt | date:'medium'}}</div>
+    </div>
+
+    <!-- Group answers by form -->
+    <div *ngFor="let formId of getFormIds(s.answers)">
+      <div class="font-semibold text-muted-dark text-085 mb-05 border-bottom-eee pb-025">
+        Form: {{formId}}
+      </div>
+      <table class="table-submissions">
+        <thead>
+          <tr class="table-header">
+            <th class="text-left p-04-06 border-ddd">Question</th>
+            <th class="text-left p-04-06 border-ddd">Answer</th>
+            <th class="text-left p-04-06 border-ddd">Type</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let a of answersForForm(s.answers, formId)">
+            <td class="p-04-06 border-ddd">
+              {{a.question?.label}}
+              <span *ngIf="!a.question?.isActive" class="text-07 text-muted-light ml-4px">(archived)</span>
+            </td>
+            <td class="p-04-06 border-ddd">
+              <span *ngIf="isArray(a.value)">{{asArray(a.value).join(', ')}}</span>
+              <span *ngIf="!isArray(a.value)">{{a.value}}</span>
+            </td>
+            <td class="p-04-06 border-ddd">
+              <span class="tag">{{a.question?.type}}</span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

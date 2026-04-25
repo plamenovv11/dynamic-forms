@@ -1,0 +1,100 @@
+<div class="page-container">
+  <div class="flex-row items-center gap-1 mb-15">
+    <a routerLink="/flows" class="fd-button fd-button--compact">← Back</a>
+    <h1 class="page-title m-0">{{flow?.title}}</h1>
+  </div>
+
+  <!-- Stepper indicator -->
+  <div *ngIf="flow" class="flex-row items-center gap-05 mb-15 flex-wrap">
+    <ng-container *ngFor="let ff of flow.flowForms; let i=index">
+      <div class="stepper-circle"
+        [ngClass]="i===currentStep ? 'stepper-active' : (i<currentStep ? 'stepper-done' : 'stepper-pending')">
+        {{i < currentStep ? '✓' : i+1}} </div>
+          <span class="text-085 whitespace-nowrap"
+            [ngClass]="i===currentStep ? 'stepper-text-active' : 'stepper-text-pending'">
+            {{ff.form.title}}
+          </span>
+          <span *ngIf="i < flow.flowForms.length-1" class="text-muted-light">›</span>
+    </ng-container>
+  </div>
+
+  <!-- Success state -->
+  <div *ngIf="submitted" class="success-banner text-1 mb-2">
+    ✓ Flow completed and answers saved!
+    <a routerLink="/submissions" class="ml-1 font-bold" style="color:inherit">View Submissions →</a>
+  </div>
+
+  <div *ngIf="error" class="text-danger mb-1">{{error}}</div>
+
+  <!-- Current Form -->
+  <div *ngIf="currentFF && !submitted" class="question-card bg-white p-15">
+    <h2 class="mt-0 text-12 border-bottom-eee pb-075 mb-125">
+      {{currentFF.form.title}}
+      <span *ngIf="currentFF.form.description" class="text-085 text-muted font-normal ml-05">—
+        {{currentFF.form.description}}</span>
+    </h2>
+
+    <div *ngFor="let q of currentFF.form.questions">
+      <div class="question-card mb-075 relative" [class.disabled-question]="!isEnabled(q)">
+
+        <div *ngIf="!isEnabled(q)" class="absolute top-05 right-075 text-07 text-muted-light italic">
+          (hidden by rule)
+        </div>
+
+        <label class="fd-form-label block font-semibold mb-05">
+          {{q.label}}
+          <span *ngIf="(q.rulesAsTarget?.length ?? 0) > 0" class="rule-badge ml-05 align-middle">conditional</span>
+        </label>
+
+        <!-- TEXT -->
+        <input *ngIf="q.type==='TEXT'" class="fd-input w-100" [disabled]="!isEnabled(q)" [(ngModel)]="answers[q.id]"
+          placeholder="Type your answer..." />
+
+        <!-- NUMBER -->
+        <input *ngIf="q.type==='NUMBER'" class="fd-input w-100" type="number" [disabled]="!isEnabled(q)"
+          [(ngModel)]="answers[q.id]" placeholder="Enter a number..." />
+
+        <!-- YES_NO -->
+        <div *ngIf="q.type==='YES_NO'" class="flex-row gap-1 mt-025">
+          <label class="flex-row items-center gap-05 cursor-pointer">
+            <input type="radio" [name]="'yn_'+q.id" value="yes" [(ngModel)]="answers[q.id]"
+              [disabled]="!isEnabled(q)" />
+            Yes
+          </label>
+          <label class="flex-row items-center gap-05 cursor-pointer">
+            <input type="radio" [name]="'yn_'+q.id" value="no" [(ngModel)]="answers[q.id]" [disabled]="!isEnabled(q)" />
+            No
+          </label>
+        </div>
+
+        <!-- SELECT -->
+        <select *ngIf="q.type==='SELECT'" class="fd-select__control w-100 p-04" [(ngModel)]="answers[q.id]"
+          [disabled]="!isEnabled(q)">
+          <option value="">-- Select an option --</option>
+          <option *ngFor="let opt of q.options" [value]="opt">{{opt}}</option>
+        </select>
+
+        <!-- MULTI_SELECT -->
+        <div *ngIf="q.type==='MULTI_SELECT'" class="flex-col gap-04 mt-025">
+          <label *ngFor="let opt of q.options" class="flex-row items-center gap-05 cursor-pointer">
+            <input type="checkbox" [value]="opt" [checked]="isChecked(q.id, opt)" [disabled]="!isEnabled(q)"
+              (change)="toggleMulti(q.id, opt, $event)" />
+            {{opt}}
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <!-- Navigation -->
+    <div class="flex-row justify-between mt-15 pt-1 border-top-eee">
+      <button class="fd-button" (click)="prevStep()" [disabled]="currentStep===0">← Previous</button>
+      <button *ngIf="currentStep < totalSteps-1" class="fd-button fd-button--emphasized" (click)="nextStep()">
+        Next →
+      </button>
+      <button *ngIf="currentStep === totalSteps-1" class="fd-button fd-button--emphasized fd-button--positive"
+        (click)="submit()">
+        Submit Flow ✓
+      </button>
+    </div>
+  </div>
+</div>

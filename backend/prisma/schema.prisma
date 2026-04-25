@@ -1,0 +1,99 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model Form {
+  id          String     @id @default(cuid())
+  title       String
+  description String?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  questions   Question[]
+  flowForms   FlowForm[]
+}
+
+model Question {
+  id          String       @id @default(cuid())
+  form        Form         @relation(fields: [formId], references: [id], onDelete: Cascade)
+  formId      String
+  label       String
+  type        String
+  // JSON array of strings for SELECT/MULTI_SELECT options
+  options     String?
+  orderIndex  Int          @default(0)
+  // Soft delete: keeps historical submission data intact
+  isActive    Boolean      @default(true)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  // Rules where this question is the SOURCE (trigger)
+  rulesAsSource Rule[] @relation("SourceQuestion")
+  // Rules where this question is the TARGET (becomes enabled)
+  rulesAsTarget Rule[] @relation("TargetQuestion")
+  // Answers referencing this question
+  answers       Answer[]
+}
+
+model Flow {
+  id          String     @id @default(cuid())
+  title       String
+  description String?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  flowForms   FlowForm[]
+  submissions Submission[]
+}
+
+model FlowForm {
+  id         String @id @default(cuid())
+  flow       Flow   @relation(fields: [flowId], references: [id], onDelete: Cascade)
+  flowId     String
+  form       Form   @relation(fields: [formId], references: [id], onDelete: Cascade)
+  formId     String
+  orderIndex Int    @default(0)
+
+  @@unique([flowId, formId])
+}
+
+// A rule: if sourceQuestion answer == conditionValue → enable targetQuestion
+model Rule {
+  id               String     @id @default(cuid())
+  sourceQuestion   Question   @relation("SourceQuestion", fields: [sourceQuestionId], references: [id], onDelete: Cascade)
+  sourceQuestionId String
+  targetQuestion   Question   @relation("TargetQuestion", fields: [targetQuestionId], references: [id], onDelete: Cascade)
+  targetQuestionId String
+  // The specific value that triggers this rule (e.g. "yes", "option-A")
+  conditionValue   String
+  action           String     @default("ENABLE")
+  createdAt        DateTime   @default(now())
+}
+
+// One submission per flow execution by a user
+model Submission {
+  id        String   @id @default(cuid())
+  flow      Flow     @relation(fields: [flowId], references: [id])
+  flowId    String
+  createdAt DateTime @default(now())
+  answers   Answer[]
+}
+
+// Individual answer for a question within a submission
+model Answer {
+  id           String     @id @default(cuid())
+  submission   Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  submissionId String
+  // Denormalize formId for easier querying per form
+  formId       String
+  question     Question   @relation(fields: [questionId], references: [id])
+  questionId   String
+  // JSON stored value: string for TEXT/YES_NO/SELECT/NUMBER, string[] for MULTI_SELECT
+  value        String
+  createdAt    DateTime   @default(now())
+
+  @@unique([submissionId, questionId])
+}

@@ -1,0 +1,25 @@
+.nav-shell {
+    display: flex;
+    gap: 16px;
+    padding: 12px 20px;
+    background-color: #1e293b;
+    align-items: center;
+}
+
+a {
+    color: #0c69e3;
+    text-decoration: none;
+    padding: 6px 10px;
+    border-radius: 6px;
+    transition: background 0.2s, color 0.2s;
+}
+
+a:hover {
+    background-color: #334155;
+    color: #ffffff;
+}
+
+.active {
+    background-color: #3b82f6;
+    color: white;
+}
